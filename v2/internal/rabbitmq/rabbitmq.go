@@ -26,6 +26,12 @@ func CreateClient(connection *amqp.Connection) (*RabbitClient, error) {
 		return &RabbitClient{}, err
 	}
 
+	// Enabling confirm mode
+	if err := channel.Confirm(false); err != nil {
+		log.Println("Failed to enable confirm mode")
+		return &RabbitClient{}, nil
+	}
+
 	return &RabbitClient{
 		connection: connection,
 		channel:    channel,
@@ -77,7 +83,7 @@ func (rc *RabbitClient) Send(ctx context.Context, exchangeName, routingKey strin
 }
 
 // Send Message and wait for the confirmation
-func (rc *RabbitClient) SendAndGetConfirmed(ctx context.Context, exchangeName, routingKey string, options amqp.Publishing) error {
+func (rc *RabbitClient) SendAndGetConfirmed(ctx context.Context, exchangeName, routingKey string, options amqp.Publishing) (bool, error) {
 	confirmation, err := rc.channel.PublishWithDeferredConfirmWithContext(
 		ctx,
 		exchangeName,
@@ -87,14 +93,14 @@ func (rc *RabbitClient) SendAndGetConfirmed(ctx context.Context, exchangeName, r
 		options,
 	)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if confirmation == nil {
 		log.Println("Confirmation mode is not enabled")
-		return nil
+		return false, nil
 	}
-	confirmation.Wait()
-	return nil
+	isPublished := confirmation.Wait()
+	return isPublished, nil
 }
 
 // Consume

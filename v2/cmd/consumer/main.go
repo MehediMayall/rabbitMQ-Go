@@ -29,7 +29,9 @@ func main() {
 
 	defer client.Close()
 
-	messageBus, err := client.Consume(queueName, "email-service", true)
+	//
+	messageBus, err := client.Consume(queueName, "email-service", false) // AutoAcknowledge false
+
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -38,7 +40,16 @@ func main() {
 
 	go func() {
 		for message := range messageBus {
+
 			print(string(message.Body))
+
+			// Send Acknowledge
+			if err := message.Ack(false); err != nil {
+				log.Println("Acknowledge messge failed")
+				continue
+			} else {
+				print("Message: sent acknowledge")
+			}
 		}
 	}()
 

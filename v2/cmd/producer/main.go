@@ -53,21 +53,29 @@ func main() {
 	// Create Message
 
 	var users = models.GetUsers()
-	usersInJson, err := json.Marshal(users)
-
-	var usersInBytes = []byte(usersInJson)
-
-	// Send Message
-	// if err := client.Send(ctx, userExchange, "user.created.nj", *client.CreateOptionsPersistent(usersInBytes)); err != nil {
-	// 	log.Fatalln(err)
-	// }
 
 	// Send Message and wait for the confirmation
-	if err := client.SendAndGetConfirmed(ctx, userExchange, "user.created.nj", *client.CreateOptionsPersistent(usersInBytes)); err != nil {
-		log.Fatalln(err)
-	}
 
-	print("Sent message successfully!")
-	time.Sleep(3 * time.Second)
+	for _, user := range users {
+
+		usersInJson, err := json.Marshal(user)
+		if err != nil {
+			continue
+		}
+
+		var userInBytes = []byte(usersInJson)
+
+		isPublished, err := client.SendAndGetConfirmed(ctx, userExchange, "user.created.nj", *client.CreateOptionsPersistent(userInBytes))
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		if isPublished {
+			print("Sent message successfully!")
+		} else {
+			print("Attempted to send the message but failed")
+		}
+	}
 
 }
