@@ -37,7 +37,7 @@ func main() {
 	defer client.Close()
 
 	// Create Queue
-	if err := client.CreateQueue(queueName, false, true); err != nil {
+	if err := client.CreateQueue(queueName, false, false); err != nil {
 		log.Fatalln(err)
 	}
 

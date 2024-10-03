@@ -76,6 +76,6 @@ func (rc *RabbitClient) Send(ctx context.Context, exchangeName, routingKey strin
 }
 
 // Consume
-func (rc *RabbitClient) Consume(queue, consumer string, autoAcknowledge bool) (<-chan amqp.Delivery, error) {
-	return rc.channel.Consume(queue, consumer, autoAcknowledge, false, false, false, nil)
+func (rc *RabbitClient) Consume(queue, consumerName string, autoAcknowledge bool) (<-chan amqp.Delivery, error) {
+	return rc.channel.Consume(queue, consumerName, autoAcknowledge, false, false, false, nil)
 }
