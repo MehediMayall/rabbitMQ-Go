@@ -50,14 +50,20 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Send Message
+	// Create Message
 
 	var users = models.GetUsers()
 	usersInJson, err := json.Marshal(users)
 
 	var usersInBytes = []byte(usersInJson)
 
-	if err := client.Send(ctx, userExchange, "user.created.nj", *client.CreateOptionsPersistent(usersInBytes)); err != nil {
+	// Send Message
+	// if err := client.Send(ctx, userExchange, "user.created.nj", *client.CreateOptionsPersistent(usersInBytes)); err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// Send Message and wait for the confirmation
+	if err := client.SendAndGetConfirmed(ctx, userExchange, "user.created.nj", *client.CreateOptionsPersistent(usersInBytes)); err != nil {
 		log.Fatalln(err)
 	}
 
