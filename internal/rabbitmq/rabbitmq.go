@@ -33,7 +33,7 @@ func CreateClient(connection *amqp.Connection) (*RabbitClient, error) {
 
 // Close Channel
 func (rc *RabbitClient) Close() error {
-	return rc.Close()
+	return rc.channel.Close()
 }
 
 // Create Queue
@@ -47,11 +47,27 @@ func (rc *RabbitClient) BindQueue(name, binding, exchange string) error {
 	return rc.channel.QueueBind(name, binding, exchange, false, nil)
 }
 
+// Create Options
+func (rc *RabbitClient) CreateOptionsPersistent(body []byte) *amqp.Publishing {
+	return &amqp.Publishing{
+		ContentType:  "text/plain",
+		DeliveryMode: amqp.Persistent,
+		Body:         body,
+	}
+}
+func (rc *RabbitClient) CreateOptionsTransient(body []byte) *amqp.Publishing {
+	return &amqp.Publishing{
+		ContentType:  "text/plain",
+		DeliveryMode: amqp.Transient,
+		Body:         body,
+	}
+}
+
 // Send Message
-func (rc *RabbitClient) Send(ctx context.Context, exchangeType, routingKey string, options amqp.Publishing) error {
+func (rc *RabbitClient) Send(ctx context.Context, exchangeName, routingKey string, options amqp.Publishing) error {
 	return rc.channel.PublishWithContext(
 		ctx,
-		exchangeType,
+		exchangeName,
 		routingKey,
 		true,
 		false,
